@@ -1,0 +1,14 @@
+PODS:
+  - STZPullToRefresh (0.0.1)
+
+DEPENDENCIES:
+  - STZPullToRefresh (from `../`)
+
+EXTERNAL SOURCES:
+  STZPullToRefresh:
+    :path: ../
+
+SPEC CHECKSUMS:
+  STZPullToRefresh: 13331982f470e33cdd743218908a068811281fdd
+
+COCOAPODS: 0.31.1
