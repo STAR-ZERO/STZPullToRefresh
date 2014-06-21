@@ -3,7 +3,7 @@
 [![Version](http://cocoapod-badges.herokuapp.com/v/STZPullToRefresh/badge.png)](http://cocoadocs.org/docsets/STZPullToRefresh)
 [![Platform](http://cocoapod-badges.herokuapp.com/p/STZPullToRefresh/badge.png)](http://cocoadocs.org/docsets/STZPullToRefresh)
 
-Control like ActionBar-PullToRefresh of Android for iOS.
+UI Component like ActionBar-PullToRefresh of Android for iOS.
 
 ![Screenshot](https://raw.github.com/STAR-ZERO/STZPullToRefresh/master/screenshot.gif)
 
