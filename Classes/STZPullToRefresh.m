@@ -8,9 +8,9 @@
 #import "STZPullToRefresh.h"
 
 @interface STZPullToRefresh ()
-@property (nonatomic, weak) UITableView *tableView;
+@property (nonatomic, weak) UIScrollView *scrollView;
 
-@property (nonatomic, weak) id<UITableViewDelegate> tableViewProxyDelegate;
+@property (nonatomic, weak) id scrollViewProxyDelegate;
 
 @property (nonatomic, strong) STZPullToRefreshView *refreshView;
 
@@ -24,26 +24,26 @@
 
 static CGFloat const kPregoressWeight = 1.2;
 
-- (id)initWithTableView:(UITableView *)tableView refreshView:(STZPullToRefreshView *)refreshView
+- (id)initWithScrollView:(UIScrollView *)scrollView refreshView:(STZPullToRefreshView *)refreshView
 {
-    return [self initWithTableView:tableView refreshView:refreshView tableViewDelegate:nil];
+    return [self initWithScrollView:scrollView refreshView:refreshView scrollViewDelegate:nil];
 }
 
-- (id)initWithTableView:(UITableView *)tableView refreshView:(STZPullToRefreshView *)refreshView tableViewDelegate:(id<UITableViewDelegate>)tableViewDelegate
+- (id)initWithScrollView:(UIScrollView *)scrollView refreshView:(STZPullToRefreshView *)refreshView scrollViewDelegate:(id<UIScrollViewDelegate>)scrollViewDelegate
 {
     self = [super init];
     if (self) {
-        self.tableViewProxyDelegate = tableViewDelegate;
+        self.scrollViewProxyDelegate = scrollViewDelegate;
 
-        self.tableView = tableView;
-        self.tableView.bounces = NO;
+        self.scrollView = scrollView;
+        //self.scrollView.bounces = NO;
 
         self.isScrollTopPosition = YES;
         self.isScrollDragging = NO;
 
         UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panAction:)];
         pan.delegate = self;
-        [self.tableView addGestureRecognizer:pan];
+        [self.scrollView addGestureRecognizer:pan];
 
         self.refreshView = refreshView;
     }
@@ -68,13 +68,13 @@ static CGFloat const kPregoressWeight = 1.2;
 #pragma mark UIPanGestureRecognizer
 - (void)panAction:(UIPanGestureRecognizer *)sender
 {
-    CGPoint location = [sender translationInView:self.tableView];
+    CGPoint location = [sender translationInView:self.scrollView];
 
     if ([self.refreshView isRefreshing]) {
         return;
     }
 
-    if (location.y > 0 && self.isScrollTopPosition && self.isScrollDragging) {
+    if (location.y > 0 && self.isScrollTopPosition && (self.isScrollDragging || self.scrollView.contentSize.height <= self.scrollView.bounds.size.height)) {
         [self.refreshView setRefreshBarProgress:location.y * kPregoressWeight];
         if (self.scrollingMax < location.y) {
             self.scrollingMax = location.y;
@@ -85,6 +85,15 @@ static CGFloat const kPregoressWeight = 1.2;
             [self.refreshView setRefreshBarProgress:0];
         }
     }
+    
+    if (sender.state == UIGestureRecognizerStateEnded) {
+        if ([self.refreshView isProgressFull]) {
+            [self startRefresh];
+        }
+        
+        self.isScrollDragging = NO;
+        [self.refreshView setRefreshBarProgress:0];
+    }
 }
 
 
@@ -94,11 +103,11 @@ static CGFloat const kPregoressWeight = 1.2;
     return YES;
 }
 
-#pragma mark - UITableViewDelegate <UIScrollViewDelegate>
+#pragma mark - UIScrollViewDelegate <UIScrollViewDelegate>
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    if ([self.tableViewProxyDelegate respondsToSelector:@selector(scrollViewDidScroll:)]) {
-        [self.tableViewProxyDelegate scrollViewDidScroll:scrollView];
+    if ([self.scrollViewProxyDelegate respondsToSelector:@selector(scrollViewDidScroll:)]) {
+        [self.scrollViewProxyDelegate scrollViewDidScroll:scrollView];
     }
 
     CGFloat offset = scrollView.contentOffset.y + scrollView.contentInset.top;
@@ -107,19 +116,19 @@ static CGFloat const kPregoressWeight = 1.2;
         self.isScrollTopPosition = NO;
         [self.refreshView setRefreshBarProgress:0];
 
-        scrollView.bounces = YES;
+       // scrollView.bounces = YES;
 
-    } else if (offset == 0) {
+    } else if (offset <= 0) {
         self.isScrollTopPosition = YES;
 
-        scrollView.bounces = NO;
+        //scrollView.bounces = NO;
     }
 }
 
 - (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView
 {
-    if ([self.tableViewProxyDelegate respondsToSelector:@selector(scrollViewDidScrollToTop:)]) {
-        [self.tableViewProxyDelegate scrollViewDidScrollToTop:scrollView];
+    if ([self.scrollViewProxyDelegate respondsToSelector:@selector(scrollViewDidScrollToTop:)]) {
+        [self.scrollViewProxyDelegate scrollViewDidScrollToTop:scrollView];
     }
 
     self.isScrollTopPosition = YES;
@@ -127,8 +136,8 @@ static CGFloat const kPregoressWeight = 1.2;
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 {
-    if ([self.tableViewProxyDelegate respondsToSelector:@selector(scrollViewWillBeginDragging:)]) {
-        [self.tableViewProxyDelegate scrollViewWillBeginDragging:scrollView];
+    if ([self.scrollViewProxyDelegate respondsToSelector:@selector(scrollViewWillBeginDragging:)]) {
+        [self.scrollViewProxyDelegate scrollViewWillBeginDragging:scrollView];
     }
 
     self.isScrollDragging = YES;
@@ -137,10 +146,11 @@ static CGFloat const kPregoressWeight = 1.2;
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
 {
-    if ([self.tableViewProxyDelegate respondsToSelector:@selector(scrollViewDidEndDragging:willDecelerate:)]) {
-        [self.tableViewProxyDelegate scrollViewDidEndDragging:scrollView willDecelerate:decelerate];
+    if ([self.scrollViewProxyDelegate respondsToSelector:@selector(scrollViewDidEndDragging:willDecelerate:)]) {
+        [self.scrollViewProxyDelegate scrollViewDidEndDragging:scrollView willDecelerate:decelerate];
     }
 
+    return;
     if ([self.refreshView isProgressFull]) {
         [self startRefresh];
     }
@@ -153,21 +163,21 @@ static CGFloat const kPregoressWeight = 1.2;
 #pragma mark - Method Forwarding
 - (BOOL)respondsToSelector:(SEL)aSelector
 {
-    return [super respondsToSelector:aSelector] || [self.tableViewProxyDelegate respondsToSelector:aSelector];
+    return [super respondsToSelector:aSelector] || [self.scrollViewProxyDelegate respondsToSelector:aSelector];
 }
 
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector
 {
-    if ([self.tableViewProxyDelegate respondsToSelector:aSelector]) {
-        return [(id) self.tableViewProxyDelegate methodSignatureForSelector:aSelector];
+    if ([self.scrollViewProxyDelegate respondsToSelector:aSelector]) {
+        return [(id) self.scrollViewProxyDelegate methodSignatureForSelector:aSelector];
     }
     return [super methodSignatureForSelector:aSelector];
 }
 
 - (void)forwardInvocation:(NSInvocation *)anInvocation
 {
-    if ([self.tableViewProxyDelegate respondsToSelector:[anInvocation selector]]) {
-        [anInvocation invokeWithTarget:self.tableViewProxyDelegate];
+    if ([self.scrollViewProxyDelegate respondsToSelector:[anInvocation selector]]) {
+        [anInvocation invokeWithTarget:self.scrollViewProxyDelegate];
     }
 }
 
