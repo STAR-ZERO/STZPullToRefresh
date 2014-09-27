@@ -43,6 +43,18 @@
     [self.tableView reloadData];
 }
 
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+
+    // Process when the number of rows does not exceed the space of the screen.
+    CGFloat visibleHeight = self.tableView.frame.size.height - self.tableView.contentInset.top;
+    CGSize contentSize = self.tableView.contentSize;
+    if (visibleHeight >= contentSize.height) {
+        [self.tableView setContentSize:CGSizeMake(contentSize.width, visibleHeight + 1)];
+    }
+}
+
 #pragma mark - UITableViewDataSource
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
