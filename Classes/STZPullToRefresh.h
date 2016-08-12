@@ -24,7 +24,7 @@
  
  UI Component like ActionBar-PullToRefresh of Android for iOS.
  */
-@interface STZPullToRefresh : NSObject <UITableViewDelegate, UIGestureRecognizerDelegate>
+@interface STZPullToRefresh : NSObject <UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
 ///---------------------
 /// @name Setting Properties
@@ -40,21 +40,21 @@
 ///---------------------
 
 /**
- Create and return instance of not necessary to UITableViewDelegate. Will not be processed for UITableViewDelegate.
+ Create and return instance of not necessary to UIScrollViewDelegate. Will not be processed for UIScrollViewDelegate.
  
- @param tableView UITableView that should be subject to the pull to refresh.
+ @param scrollView UIScrollView that should be subject to the pull to refresh.
  @param refreshView View for refresh animation.
  */
-- (id)initWithTableView:(UITableView *)tableView refreshView:(STZPullToRefreshView *)refreshView;
+- (id)initWithScrollView:(UIScrollView *)scrollView refreshView:(STZPullToRefreshView *)refreshView;
 
 /**
- Create and return instance for processing UITableViewDelegate.
+ Create and return instance for processing UIScrollViewDelegate.
 
- @param tableView UITableView that should be subject to the pull to refresh.
+ @param scrollView UIScrollView that should be subject to the pull to refresh.
  @param refreshView View for refresh animation.
- @param tableViewDelegate Receiver for processing UITableViewDelegate.
+ @param scrollViewDelegate Receiver for processing UIScrollViewDelegate.
  */
-- (id)initWithTableView:(UITableView *)tableView refreshView:(STZPullToRefreshView *)refreshView tableViewDelegate:(id<UITableViewDelegate>)tableViewDelegate;
+- (id)initWithScrollView:(UIScrollView *)scrollView refreshView:(STZPullToRefreshView *)refreshView scrollViewDelegate:(id<UIScrollViewDelegate>)scrollViewDelegate;
 
 ///---------------------
 /// @name Refresh Animation
